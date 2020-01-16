@@ -69,6 +69,23 @@ class AdminGame extends Component {
       this.setState({ currentGuess: "" });
       // this.setState({});
     };
+
+    this.setModalHalt = ev => {
+      // ev.preventDefault();
+      this.socket.emit("SEND_MESSAGE", {
+        setModalHalt: true,
+      });
+  
+    };
+    this.setModalCorrect = ev => {
+      // ev.preventDefault();
+      this.socket.emit("SEND_MESSAGE", {
+        setModalHalt:false,
+        setModalCorrect: true,
+      });
+  
+    };
+
   }
 
   haltBets = () => {
@@ -118,7 +135,11 @@ class AdminGame extends Component {
           </Col>
 
           <Col size="md-6">
-            <AdminBtns handleAnswer={this.handleAnswer} />
+            <AdminBtns 
+            handleAnswer={this.handleAnswer}
+            setModalCorrect={this.setModalCorrect}
+            setModalHalt={this.setModalHalt}
+            />
           </Col>
         </Row>
       </Container>

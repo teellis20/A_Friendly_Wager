@@ -6,30 +6,39 @@ import GuessState from "../../components/GuessState";
 import Score from "../../components/Score";
 import API from "../../utils/API";
 import LeaderModal from "../../components/LeaderModal/LeaderModal";
-// import CorrectModal from "../../components/CorrectModal/CorrectModal";
-// import HaltModal from "../../components/HaltModal/HaltModal";
+import CorrectModal from "../../components/CorrectModal/CorrectModal";
+import HaltModal from "../../components/HaltModal/HaltModal";
 import io from "socket.io-client";
+import ModalSwitch from "../../components/ModalSwitch/ModalSwitch";
 
-let guess = " ";
-let score;
-let username;
-let tempboard = [];
+// let guess = " ";
+// let score;
+// let username;
+// let tempboard = [];
 
 class User extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      score,
-      guess,
-      username,
+      score: 0,
+      guess: " ",
+      username: "default",
       setModalShow: false,
-      leaderboard: []
+      setModalHalt: false,
+      setModalCorrect: false,
+      leaderboard: [],
+      tempboard: []
     };
 
     this.socket = io("localhost:3001");
 
-    this.socket.on("RECIEVE_MESSAGE", function(data) {});
-
+    this.socket.on("RECIEVE_MESSAGE", function(data) {
+      toggleModalHalt(data.setModalHalt);
+      console.log("from admin: " + data.setModalHalt);
+      toggleModalCorrect(data.setModalCorrect);
+      console.log("from admin: " + data.setModalCorrect);
+      toggleHaltOff(data.setModalHalt);
+    });
 
     this.sendGuess = ev => {
       // ev.preventDefault();
@@ -38,14 +47,32 @@ class User extends Component {
         currentGuess: this.state.guess
       });
       // this.setState({guess: ''});
-      console.log(guess);
+      // console.log(guess);
       // this.setState({})
     };
+
+    const toggleModalHalt = (data) => {
+      // console.log("this is from the admin:" + data);
+      this.setState(state => {
+         state.setModalHalt = data });
+         console.log("**********" + this.state.setModalHalt);
+    };
+  
+    const toggleModalCorrect = (data) => {
+      this.setState(state => {
+        state.setModalCorrect = data });
+        console.log("//////////" + this.state.setModalCorrect);
+    };
+    
+   const toggleHaltOff = (data) => {
+     this.setState(state => {
+       state.setModalHalt = data });
+   } 
+
   }
 
-
   componentDidMount() {
-    username = this.props.match.params.username;
+   let username = this.props.match.params.username;
     this.setState({
       username: username
     });
@@ -57,7 +84,7 @@ class User extends Component {
 
   // Loads score and sets them to this.state.scores
   loadScore = () => {
-    API.getPlayerScore(username)
+    API.getPlayerScore(this.state.username)
       .then(res =>
         this.setState({
           score: res.data[0].currScore
@@ -69,12 +96,12 @@ class User extends Component {
   loadLeaderboard = () => {
     API.getScores()
       .then(res => {
-        tempboard = [];
+        this.state.tempboard = [];
         for (let i = 0; i < 10; i++) {
           // console.log(res.data[i]);
-          tempboard.push(res.data[i]);
+          this.state.tempboard.push(res.data[i]);
         }
-        this.setState({ leaderboard: tempboard });
+        this.setState({ leaderboard: this.state.tempboard });
         console.log(this.state.leaderboard);
       })
       .catch(err => console.log(err));
@@ -85,13 +112,31 @@ class User extends Component {
   //     this.setState({ guess: value});
   // };
 
-  toggleModalOn = () => {
-    this.loadLeaderboard();
-    this.setState({ setModalShow: true });
-  };
+  currentModal = () => {
+    if (this.state.setModalShow) {
+      return "LEADER_MODAL";
+    };
 
-  toggleModalOff = () => {
-    this.setState({ setModalShow: false });
+    if (this.state.setModalHalt) {
+      return "HALT_MODAL";
+    };
+    
+    if (this.state.setModalCorrect) {
+      return "CORRECT_MODAL";
+    };
+  }
+
+  toggleModal = () => {
+    if (this.state.setModalShow) {
+      this.setState({ setModalShow: false})
+    } else {
+      this.loadLeaderboard();
+      this.setState({ setModalShow: true});
+    }
+  }
+
+  toggleModalCorrectOff = () => {
+    this.setState({ setModalCorrect: false });
   };
 
   // function that updates guess state with onClick
@@ -105,7 +150,7 @@ class User extends Component {
     };
     console.log(toSave);
     console.log({
-      name: username,
+      name: this.state.username,
       guess: value
     });
     this.savePlayerGuess(toSave);
@@ -145,25 +190,27 @@ class User extends Component {
             />
             <GuessButtons
             guessUpdate={this.guessUpdate}
-            toggleModalOn={this.toggleModalOn}
+            toggleModalOn={this.toggleModal}
+            />
+            <ModalSwitch
+            currentModal={this.currentModal()}
             />
             <LeaderModal
             username={this.state.username}
             score={this.state.score}
-            show={this.state.setModalShow}
+            show={this.state.setModalShow }
             leaderboard={tableBody}
-            onHide={() => this.toggleModalOff()}
+            onHide={() => this.toggleModal()}
             />
-            {/* <CorrectModal
-
+            <CorrectModal
             score={this.state.score}
-            show={this.state.setModalShow}
-            onHide={() => this.toggleModalOff()}
-            /> */}
-        {/* <HaltModal 
-            show={this.state.setModalShow}
-            onHide={() => this.toggleModalOff()}
-            /> */}
+            show={this.state.setModalCorrect}
+            onHideCorrect={() => this.toggleModalCorrectOff()}
+            />
+            <HaltModal 
+            show={this.state.setModalHalt}
+            // onHideHalt={() => this.toggleHaltOff()}
+            />
       </div>
     );
   }

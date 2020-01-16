@@ -13,7 +13,10 @@ function AdminBtns(props) {
         className="btn btn-dark halt-bets"
         role="button"
         tabIndex="0"
-        onClick={() => props.haltBets()}
+        onClick={() => {
+          // props.haltBets();
+          props.setModalHalt();
+        }}
       >
         Halt Bets
       </span>
@@ -22,7 +25,10 @@ function AdminBtns(props) {
           className="btn btn-primary"
           role="button"
           tabIndex="0"
-          onClick={() => props.handleAnswer("Run")}
+          onClick={() => {
+            props.handleAnswer("Run");
+            props.setModalCorrect();
+          }}
         >
           Run
         </span>
@@ -30,7 +36,10 @@ function AdminBtns(props) {
           className="btn btn-primary"
           role="button"
           tabIndex="0"
-          onClick={() => props.handleAnswer("Pass")}
+          onClick={() => {
+            props.handleAnswer("Pass")
+            props.setModalCorrect();
+          }}
         >
           Pass
         </span>
@@ -38,7 +47,10 @@ function AdminBtns(props) {
           className="btn btn-primary"
           role="button"
           tabIndex="0"
-          onClick={() => props.handleAnswer("Kick")}
+          onClick={() => {
+            props.handleAnswer("Kick")
+            props.setModalCorrect();
+        }}
         >
           Kick
         </span>
@@ -46,7 +58,10 @@ function AdminBtns(props) {
           className="btn btn-primary"
           role="button"
           tabIndex="0"
-          onClick={() => props.handleAnswer("Turnover")}
+          onClick={() => {
+            props.handleAnswer("Turnover")
+            props.setModalCorrect();
+        }}
         >
           Turnover
         </span>
